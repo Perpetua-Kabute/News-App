@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.androiddevs.mvvmnewsapp.data.Article
+import com.androiddevs.mvvmnewsapp.models.Article
 
 @Database(
     entities = [Article::class],

@@ -2,7 +2,7 @@ package com.androiddevs.mvvmnewsapp.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.androiddevs.mvvmnewsapp.data.Article
+import com.androiddevs.mvvmnewsapp.models.Article
 
 //annotate so room knows that it is the interface that defines functions
 @Dao

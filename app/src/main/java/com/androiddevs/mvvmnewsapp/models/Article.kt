@@ -1,4 +1,4 @@
-package com.androiddevs.mvvmnewsapp.data
+package com.androiddevs.mvvmnewsapp.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

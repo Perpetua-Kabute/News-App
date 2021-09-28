@@ -35,7 +35,7 @@ class NewsActivity : AppCompatActivity() {
             }
         //connect bottom navigation view to navigation component
         if(navController != null){
-            bottomNavigationView.setupWithNavController(newsNavHostFragment.findNavController())
+            bottomNavigationView.setupWithNavController(navController)
         }
 
     }

@@ -18,7 +18,7 @@ import com.androiddevs.mvvmnewsapp.util.Constants.Companion.QUERY_PAGE_SIZE
 import com.androiddevs.mvvmnewsapp.util.Resource
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
 
-const val TAG = "Breaking News Fragment"
+const val TAG = "BreakingNewsFragment"
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
     lateinit var viewModel: NewsViewModel
     lateinit var newsAdapter: NewsAdapter
@@ -33,6 +33,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
             val bundle = Bundle().apply {
                 putSerializable("article", article)
             }
+            Log.d(TAG, "article clicked")
             findNavController().navigate(R.id.action_breakingNewsFragment_to_articleFragment, bundle)
 
         }
@@ -45,6 +46,10 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
                         newsAdapter.differ.submitList(newsResponse.articles.toList())
                         val totalPages = newsResponse.totalResults / QUERY_PAGE_SIZE + 2
                         isLastPage = viewModel.breakingNewsPage == totalPages
+                        Log.d(TAG, "is last page $isLastPage")
+                        Log.d(TAG, "Total Pages $totalPages")
+                        Log.d(TAG, "Total Results ${newsResponse.totalResults}")
+                        Log.d(TAG, "Breaking News Page ${viewModel.breakingNewsPage}")
                     }
                 }
                 is Resource.Error -> {
@@ -87,13 +92,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
      * create a scroll listener
      */
     val scrollListener = object : RecyclerView.OnScrollListener(){
-        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            super.onScrollStateChanged(recyclerView, newState)
-            //check if we're currently scrolling
-            if( newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL){
-                isScrolling = true
-            }
-        }
+
 
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
@@ -110,11 +109,28 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
             val isTotalMoreThanVisible = totalItemCount >= QUERY_PAGE_SIZE
             val shouldPaginate = isNotLoadingAndNotLastPage && isAtLastItem && isNotAtBeginning &&
                     isTotalMoreThanVisible && isScrolling
+            Log.d(TAG, "Should Paginate $shouldPaginate")
+            Log.d(TAG, "Page Number ${viewModel.breakingNewsPage}")
+            Log.d(TAG, "isScrolling $isScrolling")
+            Log.d(TAG, "isLoading $isLoading")
+            Log.d(TAG, "isLastPage $isLastPage")
             if(shouldPaginate){
                 viewModel.getBreakingNews("us")
+                Log.d(TAG,viewModel.getBreakingNews("us").toString() )
                 isScrolling = false
             }else{
                 rvBreakingNews.setPadding(0, 0, 0, 0)
+            }
+        }
+
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            //check if we're currently scrolling
+            if( newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL){
+                Log.d(TAG, "NewState $newState")
+                Log.d(TAG, "Are we currently Scrolling ${AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL == newState}")
+                isScrolling = true
+                Log.d(TAG, "isScrolling after onScrollStateChanged $isScrolling")
             }
         }
 

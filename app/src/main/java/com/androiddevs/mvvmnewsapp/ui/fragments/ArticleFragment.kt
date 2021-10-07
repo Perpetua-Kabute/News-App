@@ -24,7 +24,7 @@ class ArticleFragment : Fragment(R.layout.fragment_article)  {
         webView.apply {
             //make sure the webview opens in this fragment not browser
             webViewClient = WebViewClient()
-            loadUrl(article.url)
+            article.url?.let { loadUrl(it) }
 
         }
 

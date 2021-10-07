@@ -17,6 +17,8 @@ import com.androiddevs.mvvmnewsapp.ui.viewModels.NewsViewModelProviderFactory
 import com.androiddevs.mvvmnewsapp.util.Constants.Companion.QUERY_PAGE_SIZE
 import com.androiddevs.mvvmnewsapp.util.Resource
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
+import kotlinx.android.synthetic.main.fragment_breaking_news.paginationProgressBar
+import kotlinx.android.synthetic.main.fragment_search_news.*
 
 const val TAG = "BreakingNewsFragment"
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
@@ -46,10 +48,9 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
                         newsAdapter.differ.submitList(newsResponse.articles.toList())
                         val totalPages = newsResponse.totalResults / QUERY_PAGE_SIZE + 2
                         isLastPage = viewModel.breakingNewsPage == totalPages
-                        Log.d(TAG, "is last page $isLastPage")
-                        Log.d(TAG, "Total Pages $totalPages")
-                        Log.d(TAG, "Total Results ${newsResponse.totalResults}")
-                        Log.d(TAG, "Breaking News Page ${viewModel.breakingNewsPage}")
+                        if(isLastPage){
+                            rvBreakingNews.setPadding(0, 0, 0, 0)
+                        }
                     }
                 }
                 is Resource.Error -> {
@@ -118,8 +119,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
                 viewModel.getBreakingNews("us")
                 Log.d(TAG,viewModel.getBreakingNews("us").toString() )
                 isScrolling = false
-            }else{
-                rvBreakingNews.setPadding(0, 0, 0, 0)
             }
         }
 

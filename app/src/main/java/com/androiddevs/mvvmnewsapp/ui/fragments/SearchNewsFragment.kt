@@ -1,8 +1,10 @@
 package com.androiddevs.mvvmnewsapp.ui.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.AbsListView
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
@@ -41,6 +43,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news)  {
             val bundle = Bundle().apply {
                 putSerializable("article", article)
             }
+            view.hideKeyboard()
             findNavController().navigate(
                 R.id.action_searchNewsFragment_to_articleFragment,
                 bundle
@@ -120,6 +123,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news)  {
             super.onScrollStateChanged(recyclerView, newState)
             if(newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL){
                 isScrolling = true
+                recyclerView.hideKeyboard()
             }
         }
 
@@ -146,5 +150,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news)  {
                 isScrolling = false
             }
         }
+    }
+
+    fun View.hideKeyboard() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(windowToken, 0)
     }
 }

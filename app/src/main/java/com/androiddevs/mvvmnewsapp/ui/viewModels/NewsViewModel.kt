@@ -7,7 +7,9 @@ import android.net.ConnectivityManager.*
 import android.net.NetworkCapabilities.*
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import com.androiddevs.mvvmnewsapp.NewsApplication
 import com.androiddevs.mvvmnewsapp.models.Article
@@ -39,7 +41,29 @@ class NewsViewModel(
             safeBreakingNewsCall(countryCode)
         }
 
-    private fun handleBreakingNewsResponse(response: Response<NewsResponse>) : Resource<NewsResponse>{
+    private suspend fun safeBreakingNewsCall(countryCode: String){
+        breakingNews.postValue(Resource.Loading())
+        try {
+            if(hasInternetConnection()){
+                val response = newsRepository.getBreakingNews(countryCode, breakingNewsPage)
+                handleBreakingNewsResponse(response)
+            }
+        } catch (t: Throwable){
+            when(t) {
+                is IOException -> breakingNews.postValue(Resource.Error("Network Failure"))
+                else -> breakingNews.postValue(Resource.Error("Conversion Error"))
+            }
+        }
+    }
+
+
+    fun saveNewsResponse(newsResponse: NewsResponse) =
+        viewModelScope.launch {
+            newsRepository.insertNewsResponse(newsResponse)
+        }
+
+
+    private fun handleBreakingNewsResponse(response: Response<NewsResponse>) : Boolean{
         if(response.isSuccessful){
             response.body()?.let{ resultResponse ->
                 breakingNewsPage++
@@ -50,19 +74,37 @@ class NewsViewModel(
                     val newArticles = resultResponse.articles
                     oldArticles?.addAll(newArticles)
                 }
-
-                return Resource.Success(breakingNewsResponse ?: resultResponse)
+                deleteCurrentNewsResponse()
+                saveNewsResponse(breakingNewsResponse ?: resultResponse)
+                return true
             }
         }
 
-        return Resource.Error(response.message())
+        return false
     }
+
 
     fun searchForNews(searchQuery: String) =
         viewModelScope.launch {
-            saveSearchNewsCall(searchQuery)
+            safeSearchNewsCall(searchQuery)
         }
 
+    private suspend fun safeSearchNewsCall(searchQuery: String){
+        searchNews.postValue(Resource.Loading())
+        try {
+            if(hasInternetConnection()){
+                val searchResponse = newsRepository.searchForNews(searchQuery, searchNewsPage)
+                searchNews.postValue(handleSearchNewsResponse(searchResponse))
+            } else {
+                searchNews.postValue(Resource.Error("No internet connection"))
+            }
+        } catch (t: Throwable){
+            when(t) {
+                is IOException -> searchNews.postValue(Resource.Error("Network failure"))
+                else -> searchNews.postValue(Resource.Error("Conversion Error"))
+            }
+        }
+    }
     /**
      * Handle pagination by saving the current response in the viewModel
      * check if the response saved is null or not
@@ -85,6 +127,15 @@ class NewsViewModel(
         return Resource.Error(searchResponse.message())
     }
 
+    fun getSavedNewsResponse() =
+        newsRepository.getCurrentNewsResponse()
+
+    fun deleteCurrentNewsResponse() =
+        viewModelScope.launch {
+            newsRepository.deleteCurrentNewsResponse()
+        }
+
+
 
     fun saveArticle(article: Article) =
         viewModelScope.launch {
@@ -99,39 +150,7 @@ class NewsViewModel(
             newsRepository.deleteArticle(article)
         }
 
-    private suspend fun safeBreakingNewsCall(countryCode: String){
-        breakingNews.postValue(Resource.Loading())
-        try {
-            if(hasInternetConnection()){
-                val response = newsRepository.getBreakingNews(countryCode, breakingNewsPage)
-                breakingNews.postValue(handleBreakingNewsResponse(response))
-            } else {
-                breakingNews.postValue(Resource.Error("No internet connection"))
-            }
-        } catch (t: Throwable){
-            when(t) {
-                is IOException -> breakingNews.postValue(Resource.Error("Network Failure"))
-                else -> breakingNews.postValue(Resource.Error("Conversion Error"))
-            }
-        }
-    }
 
-    private suspend fun saveSearchNewsCall(searchQuery: String){
-        searchNews.postValue(Resource.Loading())
-        try {
-            if(hasInternetConnection()){
-                val searchResponse = newsRepository.searchForNews(searchQuery, searchNewsPage)
-                searchNews.postValue(handleSearchNewsResponse(searchResponse))
-            } else {
-                searchNews.postValue(Resource.Error("No internet connection"))
-            }
-        } catch (t: Throwable){
-            when(t) {
-                is IOException -> searchNews.postValue(Resource.Error("Network failure"))
-                else -> searchNews.postValue(Resource.Error("Conversion Error"))
-            }
-        }
-    }
 
     private fun hasInternetConnection() : Boolean{
         //use connectivity manager using context

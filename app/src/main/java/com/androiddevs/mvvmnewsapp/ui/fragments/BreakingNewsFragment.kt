@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.androiddevs.mvvmnewsapp.R
 import com.androiddevs.mvvmnewsapp.adapters.NewsAdapter
+import com.androiddevs.mvvmnewsapp.models.NewsResponse
 import com.androiddevs.mvvmnewsapp.ui.NewsActivity
 import com.androiddevs.mvvmnewsapp.ui.viewModels.NewsViewModel
 import com.androiddevs.mvvmnewsapp.ui.viewModels.NewsViewModelProviderFactory
@@ -20,6 +21,7 @@ import com.androiddevs.mvvmnewsapp.util.Resource
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
 import kotlinx.android.synthetic.main.fragment_breaking_news.paginationProgressBar
 import kotlinx.android.synthetic.main.fragment_search_news.*
+import kotlinx.coroutines.delay
 
 const val TAG = "BreakingNewsFragment"
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
@@ -30,6 +32,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = (activity as NewsActivity).viewModel
+        showProgressBar()
         setUpRecycyclerViewAdapter()
 
         newsAdapter.setOnItemClickListener { article ->
@@ -41,31 +44,44 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
 
         }
 
-        viewModel.breakingNews.observe(viewLifecycleOwner, Observer { response ->
-            when(response){
-                is Resource.Success -> {
-                    hideProgressBar()
-                    response.data?.let{newsResponse ->
-                        newsAdapter.differ.submitList(newsResponse.articles.toList())
-                        val totalPages = newsResponse.totalResults / QUERY_PAGE_SIZE + 2
-                        isLastPage = viewModel.breakingNewsPage == totalPages
-                        if(isLastPage){
-                            rvBreakingNews.setPadding(0, 0, 0, 0)
-                        }
-                    }
-                }
-                is Resource.Error -> {
-                    hideProgressBar()
-                    response.message?.let{ message ->
-                        Toast.makeText(activity, "An error occured: $message", Toast.LENGTH_LONG).show()
-                        Log.e(TAG, "An error occured $message")
-                    }
-                }
-                is Resource.Loading -> {
-                    showProgressBar()
-                }
+
+        viewModel.getSavedNewsResponse().observe(viewLifecycleOwner, Observer { newsResponse ->
+            hideProgressBar()
+            if(newsResponse == null){
+                Log.e(TAG, "NewsResponse is null")
+                Toast.makeText(activity, "No news in database",Toast.LENGTH_LONG).show()
+            }else{
+                newsAdapter.differ.submitList(newsResponse.articles.toList())
             }
+
+
         })
+
+//        viewModel.breakingNews.observe(viewLifecycleOwner, Observer { response ->
+//            when(response){
+//                is Resource.Success -> {
+//                    hideProgressBar()
+//                    response.data?.let{newsResponse ->
+//                        newsAdapter.differ.submitList(newsResponse.articles.toList())
+//                        val totalPages = newsResponse.totalResults / QUERY_PAGE_SIZE + 2
+//                        isLastPage = viewModel.breakingNewsPage == totalPages
+//                        if(isLastPage){
+//                            rvBreakingNews.setPadding(0, 0, 0, 0)
+//                        }
+//                    }
+//                }
+//                is Resource.Error -> {
+//                    hideProgressBar()
+//                    response.message?.let{ message ->
+//                        Toast.makeText(activity, "An error occured: $message", Toast.LENGTH_LONG).show()
+//                        Log.e(TAG, "An error occurred $message")
+//                    }
+//                }
+//                is Resource.Loading -> {
+//                    showProgressBar()
+//                }
+//            }
+//        })
 
     }
 
@@ -74,7 +90,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
         rvBreakingNews.apply {
             adapter = newsAdapter
             layoutManager = LinearLayoutManager(activity)
-            addOnScrollListener(this@BreakingNewsFragment.scrollListener)
+//            addOnScrollListener(this@BreakingNewsFragment.scrollListener)
         }
     }
     fun showProgressBar(){

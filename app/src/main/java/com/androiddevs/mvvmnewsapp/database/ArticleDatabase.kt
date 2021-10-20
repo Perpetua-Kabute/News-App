@@ -6,14 +6,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.androiddevs.mvvmnewsapp.models.Article
+import com.androiddevs.mvvmnewsapp.models.NewsResponse
 
 @Database(
-    entities = [Article::class],
+    entities = [Article::class, NewsResponse::class],
     version = 1
 )
 @TypeConverters(Convertors::class)
 abstract class ArticleDatabase : RoomDatabase() {
     abstract fun getArticleDao(): ArticleDao
+    abstract fun getNewsResponseDao(): NewsResponseDao
 
     companion object{
         //Volatile means that other threads can immediately see when a thread changes an instance

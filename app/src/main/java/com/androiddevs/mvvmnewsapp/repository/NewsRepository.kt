@@ -1,9 +1,9 @@
 package com.androiddevs.mvvmnewsapp.repository
 
 import com.androiddevs.mvvmnewsapp.api.RetrofitInstance
-import com.androiddevs.mvvmnewsapp.database.ArticleDao
 import com.androiddevs.mvvmnewsapp.database.ArticleDatabase
 import com.androiddevs.mvvmnewsapp.models.Article
+import com.androiddevs.mvvmnewsapp.models.NewsResponse
 
 class NewsRepository(
     val db: ArticleDatabase
@@ -23,4 +23,13 @@ class NewsRepository(
     suspend fun deleteArticle(article: Article) =
         db.getArticleDao().deleteArticle(article)
 
+    suspend fun insertNewsResponse(newsResponse: NewsResponse)=
+        db.getNewsResponseDao().insertNewsResponse(newsResponse)
+
+    fun getCurrentNewsResponse() =
+        db.getNewsResponseDao().getSavedNewsResponse()
+
+    suspend fun deleteCurrentNewsResponse(){
+        db.getNewsResponseDao().deleteCurrentNewsResponse()
+    }
 }

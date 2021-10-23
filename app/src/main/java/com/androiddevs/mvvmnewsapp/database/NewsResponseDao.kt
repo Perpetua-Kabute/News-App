@@ -16,8 +16,8 @@ interface NewsResponseDao {
     fun getSavedNewsResponse(): LiveData<NewsResponse>
 
     //delete current NewsResponse and add the new NewsResponse into the database
-    @Query("DELETE FROM news_responses")
-    suspend fun deleteCurrentNewsResponse(): Int
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateNewsResponse(newsResponse: NewsResponse): Int
 
 
 

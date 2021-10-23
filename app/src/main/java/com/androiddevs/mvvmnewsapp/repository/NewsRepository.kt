@@ -29,7 +29,7 @@ class NewsRepository(
     fun getCurrentNewsResponse() =
         db.getNewsResponseDao().getSavedNewsResponse()
 
-    suspend fun deleteCurrentNewsResponse(){
-        db.getNewsResponseDao().deleteCurrentNewsResponse()
+    suspend fun updateNewsResponse(newsResponse: NewsResponse){
+        db.getNewsResponseDao().updateNewsResponse(newsResponse)
     }
 }

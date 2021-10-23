@@ -16,6 +16,7 @@ import com.androiddevs.mvvmnewsapp.models.Article
 import com.androiddevs.mvvmnewsapp.models.NewsResponse
 import com.androiddevs.mvvmnewsapp.repository.NewsRepository
 import com.androiddevs.mvvmnewsapp.util.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okio.IOException
 import retrofit2.Response
@@ -37,7 +38,7 @@ class NewsViewModel(
     }
 
     fun getBreakingNews(countryCode: String) =
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             safeBreakingNewsCall(countryCode)
         }
 
@@ -74,8 +75,8 @@ class NewsViewModel(
                     val newArticles = resultResponse.articles
                     oldArticles?.addAll(newArticles)
                 }
-                deleteCurrentNewsResponse()
-                saveNewsResponse(breakingNewsResponse ?: resultResponse)
+                updateNewsResponse(breakingNewsResponse ?: resultResponse)
+                
                 return true
             }
         }
@@ -130,9 +131,9 @@ class NewsViewModel(
     fun getSavedNewsResponse() =
         newsRepository.getCurrentNewsResponse()
 
-    fun deleteCurrentNewsResponse() =
+    fun updateNewsResponse(response: NewsResponse) =
         viewModelScope.launch {
-            newsRepository.deleteCurrentNewsResponse()
+            newsRepository.updateNewsResponse(response)
         }
 
 

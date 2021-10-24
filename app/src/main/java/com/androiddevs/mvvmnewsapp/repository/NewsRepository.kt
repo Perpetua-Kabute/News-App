@@ -32,4 +32,6 @@ class NewsRepository(
     suspend fun updateNewsResponse(newsResponse: NewsResponse){
         db.getNewsResponseDao().updateNewsResponse(newsResponse)
     }
+
+    fun getcount() = db.getNewsResponseDao().getCount()
 }

@@ -17,7 +17,9 @@ import com.androiddevs.mvvmnewsapp.models.NewsResponse
 import com.androiddevs.mvvmnewsapp.repository.NewsRepository
 import com.androiddevs.mvvmnewsapp.util.Resource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okio.IOException
 import retrofit2.Response
 
@@ -58,8 +60,9 @@ class NewsViewModel(
     }
 
 
+
     fun saveNewsResponse(newsResponse: NewsResponse) =
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             newsRepository.insertNewsResponse(newsResponse)
         }
 
@@ -75,20 +78,30 @@ class NewsViewModel(
                     val newArticles = resultResponse.articles
                     oldArticles?.addAll(newArticles)
                 }
-                updateNewsResponse(breakingNewsResponse ?: resultResponse)
-                
+
+                println("count: ${newsRepository.getcount()}")
+                if(newsRepository.getcount() <= 0){
+                    saveNewsResponse(breakingNewsResponse ?: resultResponse)
+                }else{
+                    updateNewsResponse(breakingNewsResponse ?: resultResponse)
+                }
+
+
                 return true
             }
         }
 
         return false
     }
+    fun getSavedNewsResponse() =
+        newsRepository.getCurrentNewsResponse()
 
-
-    fun searchForNews(searchQuery: String) =
-        viewModelScope.launch {
-            safeSearchNewsCall(searchQuery)
+    fun updateNewsResponse(response: NewsResponse) =
+        viewModelScope.launch(Dispatchers.IO) {
+            newsRepository.updateNewsResponse(response)
         }
+
+
 
     private suspend fun safeSearchNewsCall(searchQuery: String){
         searchNews.postValue(Resource.Loading())
@@ -128,16 +141,12 @@ class NewsViewModel(
         return Resource.Error(searchResponse.message())
     }
 
-    fun getSavedNewsResponse() =
-        newsRepository.getCurrentNewsResponse()
-
-    fun updateNewsResponse(response: NewsResponse) =
+    fun searchForNews(searchQuery: String) =
         viewModelScope.launch {
-            newsRepository.updateNewsResponse(response)
+            safeSearchNewsCall(searchQuery)
         }
 
-
-
+    //save articles
     fun saveArticle(article: Article) =
         viewModelScope.launch {
             newsRepository.upsert(article)

@@ -19,6 +19,9 @@ interface NewsResponseDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun updateNewsResponse(newsResponse: NewsResponse): Int
 
+    @Query("SELECT COUNT(id) FROM news_responses")
+    fun getCount(): Int
+
 
 
 }

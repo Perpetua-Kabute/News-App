@@ -48,8 +48,9 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news)  {
         viewModel.getSavedNewsResponse().observe(viewLifecycleOwner, Observer { newsResponse ->
             hideProgressBar()
             if(newsResponse == null){
+                showProgressBar()
                 Log.e(TAG, "NewsResponse is null")
-                Toast.makeText(activity, "No news in database",Toast.LENGTH_LONG).show()
+//                Toast.makeText(activity, "No news in database",Toast.LENGTH_LONG).show()
             }else{
                 newsAdapter.differ.submitList(newsResponse.articles.toList())
             }
